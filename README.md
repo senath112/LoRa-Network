@@ -7,8 +7,8 @@ User's Job                                   Gateway's Job                      
    {UID, URL}                                      and parses it                            and processes it
      |                                                |                                            |
      ↓                                                ↓                                            ↓
-                                               4.
-                                               Gateway forwards UID and URL to server 
+                                               
+                                               4.Gateway forwards UID and URL to server 
                                                        | 
                                                        ↓   
 
