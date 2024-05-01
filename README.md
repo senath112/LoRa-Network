@@ -1,21 +1,38 @@
 ## LoRa Network Flowchart
 
-### User
-1. **Task**: Sends JSON data containing UID and URL.
-2. **URL Format**: None, data sent through LoRa transmission.
+User's Job                                   Gateway's Job                               Server's Job
+  |                                                |                                            |
+  ↓                                                ↓                                            ↓
+1. User sends JSON packet via LoRa              2. Gateway receives LoRa packet            3. Server receives HTTP request
+   {UID, URL}                                      and parses it                            and processes it
+     |                                                |                                            |
+     ↓                                                ↓                                            ↓
+                                               4.
+                                               Gateway forwards UID and URL to server 
+                                                       | 
+                                                       ↓   
 
-### Gateway
-1. **Task**: Receives JSON data from the user.
-2. **Task**: Parses JSON data to extract UID and URL.
-3. **Task**: Sends HTTP request to server to check balance.
-4. **Task**: Depending on response, may send HTTP request to call URL.
-5. **Task**: Sends response of URL call to server.
-
-### Server
-1. **Task**: Receives HTTP request from gateway to check balance.
-2. **URL Format**: `http://xtreamdevelopers.lk/check_balance?uid=<UID>`
-3. **Task**: Checks credit balance in MySQL table.
-4. **Task**: If balance sufficient, deducts credit and sends '1', else sends '2'.
-5. **Task**: Receives HTTP request from gateway with URL response.
-6. **URL Format**: `http://xtreamdevelopers.lk/network_act?uid=<UID>&response=<response>`
-7. **Task**: Logs activity in MySQL table.
+                                                    5. Extract UID and URL from JSON             6. Retrieve Credit Limit for UID from
+                                                       packet and send HTTP request to               MySQL database
+                                                     |                                            |
+                                                     ↓                                            ↓
+                                                 7. Server checks Credit Limit for UID
+                                                    If Credit Limit >= 1:
+                                                    - Deduct 1 from Credit Limit
+                                                    - Send '1' to gateway
+                                                      If not, send '2' to gateway
+                                                      |                                            |
+                                                      ↓                                            ↓
+                                                 8. Gateway receives response from server    9. Gateway acts based on server response:
+                                                    If '1' received:                            - If '1' received, make HTTP request
+                                                    - Make HTTP request to URL                     to URL
+                                                    - Receive response from URL                 - Receive response from URL
+                                                      If '2' received:                          - Send response and UID to server
+                                                      - Interrupt process                         for logging
+                                                        |                                            |
+                                                        ↓                                            ↓
+                                                 10. Gateway receives response from URL      11. Server receives response from
+                                                    and sends it along with UID to server        gateway and logs activity
+                                                      |                                            |
+                                                      ↓                                            ↓
+                                                 12. Server logs activity                     13. Done
